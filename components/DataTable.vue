@@ -1,53 +1,87 @@
 <template>
-  <el-input
-    v-model="search"
-    size="small"
-    placeholder="Type to search"
-    @focus="isSearching = true"
-    @blur="isSearching = false"
-  />
-  <el-table :data="displayData" style="width: 100%">
-    <el-table-column label="Date" prop="date" />
-    <el-table-column label="Name" prop="name" />
-    <el-table-column fixed="right" label="Operations" width="120">
-      <template #default>
-        <el-button link type="primary" size="small" @click="handleClick"
-          >Detail</el-button
-        >
-        <el-button link type="primary" size="small">Edit</el-button>
-      </template>
-    </el-table-column>
-  </el-table>
-  <el-pagination
-    background
-    layout="prev, pager, next"
-    :total="filterTableData.length"
-    @current-change="(val) => (currentPage = val)"
-    :current-page="currentPage"
-    :page-size="pageSize"
-  />
+  <div class="w-full flex justify-center">
+    <input
+      type="text"
+      v-model="search"
+      class="mb-8 min-w-24 md:w-1/4 rounded-md border border-gray-300 bg-white px-4 py-3 placeholder-gray-400 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+      placeholder="Thailand, Japan, Korea"
+    />
+    <div
+      class="pointer-events-none absolute inset-y-0 right-0 mr-3 flex items-center"
+    ></div>
+  </div>
+
+  <div class="flex flex-col justify-center items-center w-full gap-y-2">
+    <el-table
+      :data="displayData"
+      style="width: 80%"
+      header-style="background-color: #3f1785;"
+    >
+      <el-table-column label="Country Name">
+        <template #default="{ row }">
+          <NuxtLink
+            :to="`https://www.youtube.com/results?search_query=${row.countryName}+travel`"
+            target="_blank"
+            class="text-[var(--prim-color)] font-semibold underline-offset-2 hover:underline"
+            >{{ row.countryName }}</NuxtLink
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="Capital City" prop="capitalCity" />
+      <el-table-column fixed="right" label="Country Flag" width="120">
+        <template #default="{ row }">
+          <img :src="row.countryFlag" alt="Country Flag" class="w-14 md:w-30" />
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      background
+      layout="prev, pager, next"
+      :total="filterTableData.length"
+      @current-change="(val) => (currentPage = val)"
+      :current-page="currentPage"
+      :page-size="pageSize"
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>
-interface User {
-  date: string;
-  name: string;
-  address: string;
-}
 const currentPage = ref(1);
 const currentPageData = ref([]);
 const pageSize = ref(10);
-const isSearching = ref(false);
 
-// const handleCurrentChange = (val) => {
-//   currentPage.value = val;
-// };
+// ----- Fetch table's data
+const {
+  data: countries,
+  pending,
+  error,
+  refresh,
+} = await useFetch("https://restcountries.com/v3.1/all", {
+  transform: (countries) => {
+    return countries.map((country) => ({
+      countryName: country.name.common,
+      capitalCity: Array.isArray(country.capital)
+        ? country.capital[0]
+        : country.capital,
+      countryFlag: country.flags.svg,
+    }));
+  },
+});
+if (error.value) {
+  throw createError({
+    ...error.value,
+    statusMessage: `Could not fetch data for table`,
+  });
+}
+
+// ----- Table pagination and search
 const search = ref("");
 const filterTableData = computed(() => {
-  return tableData.filter(
+  return countries.value.filter(
     (data) =>
       !search.value ||
-      data.name.toLowerCase().includes(search.value.toLowerCase())
+      data.countryName?.toLowerCase().includes(search.value.toLowerCase()) ||
+      data.capitalCity?.toLowerCase().includes(search.value.toLowerCase())
   );
 });
 const displayData = computed(() => {
@@ -58,116 +92,6 @@ const calculateCurrentPageData = () => {
   const endIndex = startIndex + pageSize.value;
   return filterTableData.value.slice(startIndex, endIndex);
 };
-
-const handleEdit = (index: number, row: User) => {
-  console.log(index, row);
-};
-const handleDelete = (index: number, row: User) => {
-  console.log(index, row);
-};
-
-const tableData: User[] = [
-  {
-    date: "2016-05-03",
-    name: "Tom",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-02",
-    name: "John",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-04",
-    name: "Morgan",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-  {
-    date: "2016-05-01",
-    name: "Jessy",
-    address: "No. 189, Grove St, Los Angeles",
-  },
-];
 </script>
 
 <style scoped>
