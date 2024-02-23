@@ -16,6 +16,7 @@
       :data="displayData"
       style="width: 80%"
       header-style="background-color: #3f1785;"
+      v-loading="pending"
     >
       <el-table-column label="Country Name">
         <template #default="{ row }">
@@ -47,7 +48,6 @@
 
 <script lang="ts" setup>
 const currentPage = ref(1);
-const currentPageData = ref([]);
 const pageSize = ref(10);
 
 // ----- Fetch table's data
@@ -55,16 +55,18 @@ const {
   data: countries,
   pending,
   error,
-  refresh,
 } = await useFetch("https://restcountries.com/v3.1/all", {
   transform: (countries) => {
-    return countries.map((country) => ({
-      countryName: country.name.common,
-      capitalCity: Array.isArray(country.capital)
-        ? country.capital[0]
-        : country.capital,
-      countryFlag: country.flags.svg,
-    }));
+    if (Array.isArray(countries)) {
+      return countries.map((country) => ({
+        countryName: country.name.common,
+        capitalCity: Array.isArray(country.capital)
+          ? country.capital[0]
+          : country.capital,
+        countryFlag: country.flags.svg,
+      }));
+    }
+    return [];
   },
 });
 if (error.value) {
