@@ -1,7 +1,5 @@
-<script lang="ts" setup></script>
-
 <template>
-  <header class="text-center">
+  <header class="text-center mb-10">
     <h1 class="text-5xl text-[var(--prim-color)]">
       Countries of the
       <span
@@ -11,7 +9,11 @@
     </h1>
   </header>
 
-  <main></main>
+  <main>
+    <DataTable />
+  </main>
 </template>
+
+<script lang="ts" setup></script>
 
 <style scoped></style>
