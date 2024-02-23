@@ -1,5 +1,7 @@
 # Nuxt 3 Minimal Starter
 
+![Uploading Screen Shot 2567-02-23 at 13.48.07.png…]()
+
 ## Setup
 
 Make sure to install the dependencies:
